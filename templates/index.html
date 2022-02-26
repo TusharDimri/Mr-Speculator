@@ -24,11 +24,11 @@
                     <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
                 </li>
             </ul>
-            <form class="form-inline my-2 my-lg-0">
+            <!-- <form class="form-inline my-2 my-lg-0">
                 <input class="form-control mr-sm-2" type="search" id="searchTxt" placeholder="Search"
                     aria-label="Search">
                 <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-            </form>
+            </form> -->
         </div>
     </nav>
 
@@ -67,7 +67,7 @@
         <hr>
         <h1 class="my-3">Stocks being speculated: </h1>
         <hr>
-        <div id="notes" class="row container-fluid">
+        <div id="stocks" class="row container-fluid">
 
             <table class="table" style="text-align : center">
                 <thead>
@@ -81,8 +81,8 @@
                 </thead>
                 {% for data in stock_list %}
                 <tbody>
-                    <tr>
-                        <td>{{data.Ticker}}</td>
+                    <tr class="stock_list">
+                        <td class="ticker">{{data.Ticker}}</td>
                         <td>{{data.ReferencePrice}}</td>
                         <td>{{data.UserChoice}}</td>
                         <td>{{data.Email}}</td>
@@ -91,6 +91,18 @@
                 </tbody>
                 {% endfor %}
             </table>
+
+            <!-- {% for data in stock_list %}
+            <div class="card mx-2 my-2 stockList" style="width: 18rem;">
+                <div class="card-body">
+                    <h5 class="ticker" style="text-align: center;">{{data.Ticker}}</h5>
+                    <p class="card-text" style="text-align: center;">{{data.ReferencePrice}}</p>
+                    <p class="card-text" style="text-align: center;">{{data.UserChoice}}</p>
+                    <p class="card-text" style="text-align: center;">{{data.Email}}</p>
+                    <a href="#" class="btn btn-primary delete-btn" style="text-align: center;">Delete</a>
+                </div>
+            </div>
+            {% endfor %} -->
 
 
         </div>

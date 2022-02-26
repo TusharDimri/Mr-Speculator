@@ -51,7 +51,7 @@ def getStockPrice(url):
     for item in data_array:
         if 'lastPrice' in item:
             index = data_array.index(item)+1
-            # print(index)s
+            # print(index)
 
     stock_price_raw = data_array[index]
 
@@ -80,18 +80,20 @@ def sendMail(email_id, stock_ticker, stock_price, user_choice, reference_price):
     mail.send(msg)
 
 def speculate(stock_list, stock_price):
-    if stock_price > float(stock_list.ReferencePrice) and stock_list.UserChoice==GREATER:
-        print("Pass")
-        sendMail(stock_list.Email, stock_list.Ticker, stock_price, stock_list.UserChoice, stock_list.ReferencePrice)
-
-    elif stock_price < float(stock_list.ReferencePrice) and stock_list.UserChoice==SMALLER: 
-        print("Pass")
-        sendMail(stock_list.Email, stock_list.Ticker, stock_price, stock_list.UserChoice, stock_list.ReferencePrice)
-                        
     
-    elif stock_price == float(stock_list.ReferencePrice) and stock_list.UserChoice==EQUAL:
-        print("Pass")
-        sendMail(stock_list.Email, stock_list.Ticker, stock_price, stock_list.UserChoice, stock_list.ReferencePrice)
+    for stock in stock_list:
+        if stock_price > float(stock.ReferencePrice) and stock.UserChoice==GREATER:
+            print("Pass")
+            sendMail(stock.Email, stock.Ticker, stock_price, stock.UserChoice, stock.ReferencePrice)
+
+        elif stock_price < float(stock.ReferencePrice) and stock.UserChoice==SMALLER: 
+            print("Pass")
+            sendMail(stock.Email, stock.Ticker, stock_price, stock.UserChoice, stock.ReferencePrice)
+                            
+        
+        elif stock_price == float(stock.ReferencePrice) and stock.UserChoice==EQUAL:
+            print("Pass")
+            sendMail(stock.Email, stock.Ticker, stock_price, stock.UserChoice, stock.ReferencePrice)
             
 
 @app.route("/", methods=["GET", "POST"])
@@ -105,8 +107,8 @@ def home():
         print(reference_price)
         print(user_choice)
 
-        url = f"https://www1.nseindia.com/live_market/dynaContent/live_watch/get_quote/GetQuote.jsp?symbol={stock_ticker}"
 
+        url = f"https://www1.nseindia.com/live_market/dynaContent/live_watch/get_quote/GetQuote.jsp?symbol={stock_ticker}"
         stock_price = getStockPrice(url)
 
         entry = Stocks(Email=email_id, ReferencePrice=reference_price, UserChoice=user_choice, Ticker=stock_ticker,)
@@ -114,8 +116,8 @@ def home():
         db.session.add(entry)
         db.session.commit()        
 
-        
         stock_list = Stocks.query.all()   
+        
         
         speculate(stock_list, stock_price)
 
@@ -131,6 +133,8 @@ def delete(S_no):
     db.session.delete(stock_data)
     db.session.commit()
     return redirect("/")
+
+# stock_list = Stocks.query.all()   
 
 app.run(debug=True)
 
