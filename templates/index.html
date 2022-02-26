@@ -25,7 +25,8 @@
                 </li>
             </ul>
             <form class="form-inline my-2 my-lg-0">
-                <input class="form-control mr-sm-2" type="search" id="searchTxt" placeholder="Search" aria-label="Search">
+                <input class="form-control mr-sm-2" type="search" id="searchTxt" placeholder="Search"
+                    aria-label="Search">
                 <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
             </form>
         </div>
@@ -51,7 +52,7 @@
                     </div>
                     <h5 class="card-title">Choose</h5>
                     <div class="form-group">
-                        <select id="user-choice" name="user-choice"  class="selectpicker form-control">
+                        <select id="user-choice" name="user-choice" class="selectpicker form-control">
                             {% for o in data %}
                             <option value="{{ o.name }}">{{ o.name }}</option>
                             {% endfor %}
@@ -64,17 +65,32 @@
 
         <!-- Your Notes Section -->
         <hr>
-        <h1 class="my-3">Your Notes</h1>
+        <h1 class="my-3">Stocks being speculated: </h1>
         <hr>
         <div id="notes" class="row container-fluid">
 
-            <!-- <div class="card mx-2 my-2 noteCard" style="width: 18rem;">
-                <div class="card-body">
-                    <h5 class="card-title">Note</h5>
-                    <p class="card-text"></p>
-                    <a href="#" class="btn btn-primary">Delete Note</a>
-                </div>
-            </div> -->
+            <table class="table" style="text-align : center">
+                <thead>
+                    <tr>
+                        <th scope="col">Symbol</th>
+                        <th scope="col">Reference Price</th>
+                        <th scope="col">User Choice</th>
+                        <th scope="col">User Email</th>
+                        <th scope="col">Delete</th>
+                    </tr>
+                </thead>
+                {% for data in stock_list %}
+                <tbody>
+                    <tr>
+                        <td>{{data.Ticker}}</td>
+                        <td>{{data.ReferencePrice}}</td>
+                        <td>{{data.UserChoice}}</td>
+                        <td>{{data.Email}}</td>
+                        <td> <a href="/delete/{{data.S_no}}"> <button class="btn btn-primary">Delete</button> </a> </td>
+                    </tr>
+                </tbody>
+                {% endfor %}
+            </table>
 
 
         </div>

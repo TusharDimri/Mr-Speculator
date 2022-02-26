@@ -2,7 +2,8 @@
     "params":
     {
       "gmail-user" : "tushar.dimri91@gmail.com",
-      "gmail-password" : "Tushar_81268"
+      "gmail-password" : "Tushar_81268",
+      "local_uri": "mysql://root:@localhost/mr speculator"
     }
   
   
