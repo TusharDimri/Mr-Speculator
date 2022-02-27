@@ -1,10 +1,11 @@
-from matplotlib.style import use
+from sched import scheduler
 import requests
 from bs4 import BeautifulSoup
-from flask import Flask, render_template, request, redirect
+from flask import Flask, redirect, render_template, request, redirect
 from flask_sqlalchemy import  SQLAlchemy
 from flask_mail import Mail, Message
 import json
+from flask_apscheduler import APScheduler
 
 LOCAL_SERVER = True
 
@@ -29,7 +30,9 @@ mail = Mail(app)
 if LOCAL_SERVER:  # If the server is Local Server which is true for this case
     app.config['SQLALCHEMY_DATABASE_URI'] = params["local_uri"]  # imported from config.json
 
+
 db = SQLAlchemy(app)
+scheduler = APScheduler()
 
 class Stocks(db.Model):
     Email = db.Column(db.String(40), nullable=False)
@@ -39,8 +42,11 @@ class Stocks(db.Model):
     Ticker = db.Column(db.String(15), nullable=False)
 
 
-def getStockPrice(url):
+def getStockPrice(stock_ticker):
     headers = {'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36'}
+    
+    url = f"https://www1.nseindia.com/live_market/dynaContent/live_watch/get_quote/GetQuote.jsp?symbol={stock_ticker}"
+
 
     response = requests.get(url=url, headers=headers)
 
@@ -78,22 +84,40 @@ def sendMail(email_id, stock_ticker, stock_price, user_choice, reference_price):
     data = f"{stock_ticker} price: ₹{stock_price} is {user_choice} given price: ₹{reference_price}"
     msg.body = data
     mail.send(msg)
+    print("Message Sent")
 
-def speculate(stock_list, stock_price):
-    
+def deleteData(S_no):
+    stock_data = Stocks.query.filter_by(S_no=S_no).first()
+    db.session.delete(stock_data)
+    db.session.commit()
+
+def speculate():
+    stock_list = Stocks.query.all()
     for stock in stock_list:
+        ticker = stock.Ticker
+        stock_price = getStockPrice(ticker)
+
         if stock_price > float(stock.ReferencePrice) and stock.UserChoice==GREATER:
             print("Pass")
-            sendMail(stock.Email, stock.Ticker, stock_price, stock.UserChoice, stock.ReferencePrice)
+            with app.app_context():
+                sendMail(stock.Email, stock.Ticker, stock_price, stock.UserChoice, stock.ReferencePrice)
+                deleteData(stock.S_no)
+
 
         elif stock_price < float(stock.ReferencePrice) and stock.UserChoice==SMALLER: 
             print("Pass")
-            sendMail(stock.Email, stock.Ticker, stock_price, stock.UserChoice, stock.ReferencePrice)
-                            
-        
+            with app.app_context():
+                sendMail(stock.Email, stock.Ticker, stock_price, stock.UserChoice, stock.ReferencePrice)
+                deleteData(stock.S_no)
+            
+            
         elif stock_price == float(stock.ReferencePrice) and stock.UserChoice==EQUAL:
             print("Pass")
-            sendMail(stock.Email, stock.Ticker, stock_price, stock.UserChoice, stock.ReferencePrice)
+            with app.app_context():
+                sendMail(stock.Email, stock.Ticker, stock_price, stock.UserChoice, stock.ReferencePrice)
+                deleteData(stock.S_no)
+            
+            
             
 
 @app.route("/", methods=["GET", "POST"])
@@ -107,36 +131,33 @@ def home():
         print(reference_price)
         print(user_choice)
 
-
-        url = f"https://www1.nseindia.com/live_market/dynaContent/live_watch/get_quote/GetQuote.jsp?symbol={stock_ticker}"
-        stock_price = getStockPrice(url)
-
         entry = Stocks(Email=email_id, ReferencePrice=reference_price, UserChoice=user_choice, Ticker=stock_ticker,)
-
         db.session.add(entry)
         db.session.commit()        
-
-        stock_list = Stocks.query.all()   
         
+        scheduler.add_job(func=speculate, trigger='interval', id=None, seconds=1)    
         
-        speculate(stock_list, stock_price)
+        return redirect("/")
 
-        return render_template("index.html", data=DATA, stock_list=stock_list)
-
-    stock_list = Stocks.query.all()
-    return render_template("index.html", data=DATA, stock_list = stock_list)
+    
+    return render_template("index.html", data=DATA, stock_list =  Stocks.query.all())
 
 
 @app.route("/delete/<string:S_no>")
 def delete(S_no):
-    stock_data = Stocks.query.filter_by(S_no=S_no).first()
-    db.session.delete(stock_data)
-    db.session.commit()
+    # stock_data = Stocks.query.filter_by(S_no=S_no).first()
+    # db.session.delete(stock_data)
+    # db.session.commit()
+    deleteData(S_no)
     return redirect("/")
 
-# stock_list = Stocks.query.all()   
 
+
+
+scheduler.start() 
 app.run(debug=True)
+
+
 
 # stock_ticker = "TATAMOTORS"
 # url = f"https://www1.nseindia.com/live_market/dynaContent/live_watch/get_quote/GetQuote.jsp?symbol={stock_ticker}"
