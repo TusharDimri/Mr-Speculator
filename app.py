@@ -5,7 +5,7 @@ from flask import Flask, redirect, render_template, request, redirect
 from flask_sqlalchemy import  SQLAlchemy
 from flask_mail import Mail, Message
 import json
-from flask_apscheduler import APScheduler
+# from flask_apscheduler import APScheduler
 
 LOCAL_SERVER = True
 
@@ -32,7 +32,7 @@ if LOCAL_SERVER:  # If the server is Local Server which is true for this case
 
 
 db = SQLAlchemy(app)
-scheduler = APScheduler()
+# scheduler = APScheduler()
 
 class Stocks(db.Model):
     Email = db.Column(db.String(40), nullable=False)
@@ -104,6 +104,7 @@ def speculate():
                 deleteData(stock.S_no)
 
 
+
         elif stock_price < float(stock.ReferencePrice) and stock.UserChoice==SMALLER: 
             print("Pass")
             with app.app_context():
@@ -117,7 +118,7 @@ def speculate():
                 sendMail(stock.Email, stock.Ticker, stock_price, stock.UserChoice, stock.ReferencePrice)
                 deleteData(stock.S_no)
             
-            
+        
             
 
 @app.route("/", methods=["GET", "POST"])
@@ -135,11 +136,18 @@ def home():
         db.session.add(entry)
         db.session.commit()        
         
-        scheduler.add_job(func=speculate, trigger='interval', id=None, seconds=1)    
-        
+        # scheduler.resume() 
+        # scheduler.add_job(func=speculate, trigger='interval', id=None, seconds=1)    
+        speculate()
+
         return redirect("/")
 
     
+
+    # scheduler.resume() 
+    # scheduler.add_job(func=speculate, trigger='interval', id=None, seconds=1)   
+    
+    speculate()
     return render_template("index.html", data=DATA, stock_list =  Stocks.query.all())
 
 
@@ -153,8 +161,7 @@ def delete(S_no):
 
 
 
-
-scheduler.start() 
+# scheduler.start()    
 app.run(debug=True)
 
 
