@@ -161,7 +161,7 @@ def delete(S_no):
 
 
 
-# scheduler.start()    
+# scheduler.start()  
 app.run(debug=True)
 
 
